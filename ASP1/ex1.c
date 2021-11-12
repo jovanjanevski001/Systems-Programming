@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -14,24 +13,18 @@
 int main (int argc, int* argv[])
 {
 
-//	 fds[1][0] --> child 1's read end
-//	 fds[1][1] --> child 1's write end
+//	 fds[0][0] --> child 1's read end
+//	 fds[0][1] --> child 1's write end
 
-//	 fds[2][0] --> child 2's read end
-//	 fds[2][1] --> child 2's write end	
+//	 fds[1][0] --> child 2's read end
+//	 fds[1][1] --> child 2's write end	
 	int fds[2][2];		
 	pid_t pid, pid2;
 	
-	int buf = 1500* sizeof(char);
-	char* str = (char*)malloc(buf);
-
 	char* list[2] = {"./ex2", NULL};
 	char* args[2] = {"./ex3", NULL};
 
-
 	// Open the pipes, output which pipe failed to open in case of error
-	//  0 = CHILD1
-	//  1 = CHILD2	
 	for (int i = 0; i < 2; i++)
 	{
 		if (pipe(fds[i]) == -1)
@@ -45,12 +38,11 @@ int main (int argc, int* argv[])
 		// Cannot fork...
 		case -1:
 			printf("error during fork");
-			return -1;
-		
+			break;
+
 		// Child 1, responsible for running email_filter	
 		case 0:
-			
-			// close unused pipes
+			/* close unused pipes */
 			close(fds[CHILD2][READ_END]);
 			close(fds[CHILD2][WRITE_END]);
 			close(fds[CHILD1][READ_END]);			
@@ -66,25 +58,28 @@ int main (int argc, int* argv[])
 
 			pid2 = fork();			//	create the 2nd child process
 
-			// Child 2, responsilbe for running calender_filter
+			// Child 2, responsible for running calender_filter
 			if (pid2 == 0)
 			{
-				// close unused pipes
+				/* close unused pipes */
 				close(fds[CHILD1][WRITE_END]);
 				close(fds[CHILD2][READ_END]);
 
-				dup2(fds[CHILD1][READ_END], STDIN_FILENO);
-				close(fds[CHILD1][READ_END]);
+				dup2(fds[CHILD1][READ_END], STDIN_FILENO);		//	read end of pipe directed to stdin fileno
+				close(fds[CHILD1][READ_END]);					//	pipe not needed after dup2 call
 
 				dup2(fds[CHILD2][WRITE_END], STDOUT_FILENO);
 				close(fds[CHILD2][WRITE_END]);
 
-				execv("./ex3", args);
-				_exit(1);
+				execv("./ex3", args);							//	run the ./ex3 executable
 			}
 
 			else
 			{
+				/*parent process */
+				int bufSize = 1500* sizeof(char);
+				char* str = (char*)malloc(bufSize);
+
 				// close unused pipes
 				close(fds[CHILD1][READ_END]);
 				close(fds[CHILD1][WRITE_END]);
@@ -94,7 +89,7 @@ int main (int argc, int* argv[])
 				while ((pid = wait(NULL)) != -1 && (pid2 = wait(NULL) != -1))
 		
 				// read from the child2 pipe
-				read(fds[CHILD2][0], str, buf);
+				read(fds[CHILD2][0], str, bufSize);
 
 				freopen("output.txt", "w+", stdout);					// redirect stdout to output.txt
 				printf("%s", str);										// printing now writes to our output text file, not the console

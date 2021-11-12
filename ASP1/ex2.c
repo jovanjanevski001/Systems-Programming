@@ -12,12 +12,12 @@ int main (int argc, int* argv[])
 	char* str = (char*)malloc(100*sizeof(char));
 	char* buffer = (char*)malloc(bufSize);
 
-	stdin = fopen("input.txt", "r");			//	stdin now poiting to input.txt 
+	stdin = fopen("input.txt", "r");			//	stdin now pointing to input.txt 
 
 	// keep grabbing lines until NULL/EOF
 	while (fgets(str, bufSize, stdin) != NULL) 
 	{
-		// if the string length is 50 characters, then it matches our desired out
+		// if the string length is 50 characters, then the output is well formed
 		// ---> append the str to the buffer
 		if (strlen(str) == 50)
 			strcat(buffer, str+9);
