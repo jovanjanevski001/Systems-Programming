@@ -4,16 +4,16 @@ This exercise demonstrates the use of pipe(), fork(), execv(), dup/dup2()
 to run multiple processes and chain the output of one process as input to another.
 
 
---------------		------------		   -----------		      ----------               --------------
+--------------		------------	Stage1	   -----------	   Stage2     ----------               --------------
 |  Input.txt |   ==>    |  Child 1 |   0======0    | Child 2 |    0======0    | Parent |     ==>       | Output.txt |
---------------  STDIN   ------------	PIPE 1     -----------	   PIPE	2     ----------    STDOUT     --------------
+--------------  STDIN   ------------	 PIPE      -----------	    PIPE      ----------    STDOUT     --------------
 
 STDIN 	- points to input.txt and reads into child 1
 
-PIPE 1 	- Child 1 uses the write end of PIPE 1 to send data to Child 2. 
-	    * Child 2 will use the read end of PIPE 1 to read the data sent from Child 1.
+Stage1	- Child 1 uses the write end of PIPE to send data to Child 2. 
+	    * Child 2 will use the read end of PIPE to read the data sent from Child 1.
 
-PIPE 2	- Child 2 uses the write end of PIPE 2 to send data to the Parent process.
+Stage2	- Child 2 uses the write end of PIPE 2 to send data to the Parent process.
 	    * Parent uses the read end of PIPE 2 to read the data sent from Child 2.
 	    
 STDOUT	- writes to output.txt as opposed to the console
