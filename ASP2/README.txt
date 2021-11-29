@@ -12,8 +12,8 @@ This program utilizes the pthread library and creates 2 threads (t1, t2) that wi
 
 
 
--------------				---------				---------				--------				--------------
-| Input.txt |	 ==>		|	t1	|	|======>	|	t2	|	 ==>		| MAIN |	 ==>		| Output.txt |
+-------------			---------			---------			--------			--------------
+| Input.txt |	 ==>		|  t1	|	|======>	|  t2	|	 ==>		| MAIN |	 ==>		| Output.txt |
 -------------   STDIN		---------	 BUFFER		---------	RETURNS		--------	STDOUT		--------------
 
 
