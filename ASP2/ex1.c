@@ -8,8 +8,8 @@ int GetFileAttributes(void);
 pthread_mutex_t mutex;
 pthread_cond_t cond;
 
-/* Global variables that are shared between threads
- * volatile so the compiler doesnt optimize them */
+/* Global variables that are shared between threads.
+ * volatile so the compiler doesnt optimize them. */
 volatile char flag = TRUE;
 volatile __queue__ q;
 
@@ -18,48 +18,42 @@ int main (int argc, char* argv[])
 	/* User input for the buffer size */
 	int bufferSize = atoi(argv[1]);
 
-	/* GetFileAttributes returns - # of lines in the file */
-	int lines = GetFileAttributes();
+	int lines = GetFileAttributes();	// # of lines in the file
 	char* outputBuffer = (char*)malloc(MAX_LINE_LENGTH * lines * sizeof(char));		//	to be passed into t2 by reference
-	void* arg = outputBuffer;
-
-	QueueInit(&q, bufferSize);		//	inits q to hold bufferSize items 
 
 	pthread_t t1, t2;
 
-	/* Inits for Mutex and Condition variable */
+	QueueInit(&q, bufferSize);			//	inits q to hold "bufferSize" amount of items 
+
 	pthread_mutex_init(&mutex, NULL);
 	pthread_cond_init(&cond, NULL);
 
-	/* Create threads - t2, t1*/ 
-	pthread_create(&t2, NULL, Thread2Function, arg);
+	pthread_create(&t2, NULL, Thread2Function, (void*)outputBuffer);
 	pthread_create(&t1, NULL, Thread1Function, NULL);
 	
-	/* Destroy threads - t2, t1 (return NULL from both) */
 	pthread_join(t1, NULL);
 	pthread_join(t2, NULL);
 	
-	/* Destroy mutex & condition variable */
 	pthread_cond_destroy(&cond);
 	pthread_mutex_destroy(&mutex);	
 
 	QueueDestroy(q);
 	
-	// stdout now writes to output.txt, not the terminal
+	/* stdout now writes to output.txt, not the terminal */
 	freopen("output.txt", "w+", stdout);
-	write(STDOUT_FILENO, outputBuffer, 100*lines*sizeof(char));
+	write(STDOUT_FILENO, outputBuffer, MAX_LINE_LENGTH * lines * sizeof(char));
 
-	free(outputBuffer);		//	free allocated memory on the heap...
+	free(outputBuffer);		
 
 	return 0;
 }
 
 void* Thread1Function(void* arg)
 {
-	char* temp = (char*)malloc(100*sizeof(char));
+	char* temp = (char*)malloc(MAX_LINE_LENGTH * sizeof(char));
 	
 	// while EOF is not reached, grab a line from stdin buffer
-	while (fgets(temp, 100, stdin) != NULL)
+	while (fgets(temp, MAX_LINE_LENGTH, stdin) != NULL)
 	{
 		// accessing shared resources, so must lock our mutex to guarantee exclusion
 		pthread_mutex_lock(&mutex); 
@@ -102,14 +96,10 @@ void* Thread2Function(void* arg)
 		/* Accessing shared resources, lock the mutex for exclusion */
 		pthread_mutex_lock(&mutex);
 
-		// checks if the queue is empty, TRUE ==> have t2 wait for cond to be pulled
+		// have t2 wait for cond to be pulled if the queue is empty
 		while (IsEmpty(&q) == TRUE && flag == TRUE)
-		{
 			pthread_cond_wait(&cond, &mutex);			
-		}
 
-		// checks if queue is empty and flag is FALSE (no more items to be sent to the queue)
-		// if both are vaild ==> then break out of the loop
 		if (IsEmpty(&q) == TRUE && flag == FALSE) 
 		{
 			pthread_mutex_unlock(&mutex);
@@ -136,7 +126,7 @@ int GetFileAttributes(void)
 
 	while ( fgets(temp, MAX_LINE_LENGTH*sizeof(char), stdin) != NULL ) ++lineNum;
 	
-	rewind(stdin);		//	reset stdin back to the beginning of input.txt
+	rewind(stdin);		//	set stdin to the beginning of input.txt
 	free(temp);
 
 	return lineNum;

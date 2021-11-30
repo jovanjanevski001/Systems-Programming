@@ -9,7 +9,8 @@
 #define MAX_LINE_LENGTH	100
 
 
-/* Implementing a circular queue using an array */
+/* Implementing a circular queue using an array
+ * FIFO approach to pushing/popping items from the queue */
 typedef struct __queue__
 {
     char** str_array;
@@ -21,16 +22,15 @@ typedef struct __queue__
 /* Function to initialize the queue */
 void QueueInit(volatile __queue__* q, int size)
 {
-	/* str_array will be an array of strings of size MAX_LINE_LENGTH * size
-	 * size will be determined by user input */
 	q->str_array = (char**)malloc(MAX_LINE_LENGTH * size * sizeof(char));
     q->head = 0;
     q->tail = 0;
     q->num_entries = 0;
-    q->size = size;
+    q->size = size;				// size will be determined by user at runtime
+
 }
 
-/* Since we allocated memory on the heap, proper practice to free it when done */
+/* Function to free any allocated memory on the heap */
 void QueueDestroy(volatile __queue__ q)
 {
     free(q.str_array);
