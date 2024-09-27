@@ -1,8 +1,11 @@
 CC = gcc
+OBJS = ex1 ex2 ex3
+TXT = output.txt
 
-default:
-	$(CC) ex1.c -o ex1
-	$(CC) ex2.c -o ex2
-	$(CC) ex3.c -o ex3
+all: $(OBJS)
+
+%.o: %.c
+	$(CC) -c -o $@ $<
+
 clean:
-	rm ex1 ex2 ex3 output.txt
+	rm $(OBJS) $(TXT)
