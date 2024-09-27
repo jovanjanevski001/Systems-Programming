@@ -1,5 +1,8 @@
+CC = gcc
+CFLAGS = -g -lpthread
+
 default:
-	gcc -g ex1.c -lpthread -o ex1
+	$(CC) $(CFLAGS) -o ex1 ex1.c
 
 clean:
 	rm ex1 output.txt
